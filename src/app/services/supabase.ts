@@ -1,6 +1,5 @@
 import { Injectable, signal } from '@angular/core';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
-import { environment } from '../../environments/environment';
 import { Client } from '../models/client.model';
 
 @Injectable({
@@ -8,12 +7,15 @@ import { Client } from '../models/client.model';
 })
 export class SupabaseService {
   private supabase: SupabaseClient;
-  // Señales reactivas para el estado global
   public currentUser = signal<User | null>(null);
   public userRole = signal<'admin' | 'user' | null>(null);
 
   constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+    // Ponemos las credenciales directamente aquí para evitar problemas en Vercel
+    this.supabase = createClient(
+      'https://qxkuwlumnlplidovtcwb.supabase.co',
+      'sb_publishable_hV5dlhfTpejUrvxAomXHnw_1O_d-HVE'
+    );
     this.initSession();
   }
 
