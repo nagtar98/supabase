@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Imágenes Storage</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-grid>
+    <ion-row>
+      @for (img of images; track img) {
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <img [src]="img" alt="Imagen de Supabase" />
+          </ion-card>
+        </ion-col>
+      } @empty {
+        <p>No hay imágenes en el bucket "galeria".</p>
+      }
+    </ion-row>
+  </ion-grid>
+</ion-content>

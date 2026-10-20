@@ -1,48 +1,57 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>DAM CRM - Gestión de Clientes</ion-title>
+    <ion-title>DAM CRM</ion-title>
+    
+    <ion-buttons slot="end">
+      <!-- Botón de Logout: Solo visible si ESTÁS logueado -->
+      @if (currentUser()) {
+        <ion-button (click)="doLogout()" color="danger">Cerrar Sesión</ion-button>
+      }
+      <!-- Botón de la Galería -->
+      <ion-button routerLink="/galeria">Ver Galería</ion-button>
+    </ion-buttons>
+    
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- FORMULARIO REACTIVO (Solo visible para admins) -->
+
+  <!-- LOGIN: Solo se muestra si NO hay sesión -->
+  @if (!currentUser()) {
+    <ion-card color="light" class="ion-margin-bottom">
+      <ion-card-header><ion-card-title>Login requerido para editar</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="doLogin()">
+          <ion-item><ion-label position="stacked">Email</ion-label><ion-input type="email" formControlName="email"></ion-input></ion-item>
+          <ion-item><ion-label position="stacked">Contraseña</ion-label><ion-input type="password" formControlName="password"></ion-input></ion-item>
+          <ion-button type="submit" expand="block" class="ion-margin-top" [disabled]="loginForm.invalid || isLoading">
+            @if (isLoading) { <ion-spinner name="crescent"></ion-spinner> } @else { Entrar }
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- FORMULARIO ADMIN: Solo se muestra si SI hay sesión y es Admin -->
   @if (isAdmin() === 'admin') {
     <ion-card>
-      <ion-card-header>
-        <ion-card-title>{{ editingClientId ? 'Editar Cliente' : 'Nuevo Cliente' }}</ion-card-title>
-      </ion-card-header>
+      <ion-card-header><ion-card-title>Nuevo/Editar Cliente</ion-card-title></ion-card-header>
       <ion-card-content>
         <form [formGroup]="clientForm" (ngSubmit)="saveClient()">
-          <ion-item>
-            <ion-label position="stacked">Nombre</ion-label>
-            <ion-input type="text" formControlName="nombre"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">Empresa</ion-label>
-            <ion-input type="text" formControlName="empresa"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">Email</ion-label>
-            <ion-input type="email" formControlName="email"></ion-input>
-          </ion-item>
-
+          <ion-item><ion-label position="stacked">Nombre</ion-label><ion-input type="text" formControlName="nombre"></ion-input></ion-item>
+          <ion-item><ion-label position="stacked">Empresa</ion-label><ion-input type="text" formControlName="empresa"></ion-input></ion-item>
+          <ion-item><ion-label position="stacked">Email</ion-label><ion-input type="email" formControlName="email"></ion-input></ion-item>
           <div class="ion-margin-top">
-            <ion-button type="submit" expand="block" [disabled]="clientForm.invalid">
-              {{ editingClientId ? 'Actualizar' : 'Guardar' }}
-            </ion-button>
-            @if (editingClientId) {
-              <ion-button type="button" fill="clear" expand="block" color="medium" (click)="resetForm()">
-                Cancelar
-              </ion-button>
-            }
+            <ion-button type="submit" expand="block" [disabled]="clientForm.invalid">Guardar</ion-button>
+            @if (editingClientId) { <ion-button type="button" fill="clear" expand="block" (click)="resetForm()">Cancelar</ion-button> }
           </div>
         </form>
       </ion-card-content>
     </ion-card>
   }
 
-  <!-- TABLA / LISTA DE CLIENTES -->
-  <h3>Listado de Clientes</h3>
+  <!-- LA LISTA ES PÚBLICA (Se ve siempre, pero los botones de borrar/editar están ocultos) -->
+  <h3 class="ion-margin-top">Listado de Clientes</h3>
   <ion-list>
     @for (client of clients; track client.id) {
       <ion-item-sliding>
@@ -52,30 +61,14 @@
             <p>{{ client.empresa }} | {{ client.email }}</p>
           </ion-label>
         </ion-item>
-
-        <!-- Opciones al deslizar (Solo Administradores) -->
+        <!-- Opciones deslizar (Solo Administradores) -->
         @if (isAdmin() === 'admin') {
           <ion-item-options side="end">
-            <ion-item-option color="primary" (click)="editClient(client)">
-              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-            </ion-item-option>
-            <ion-item-option color="danger" (click)="deleteClient(client.id!)">
-              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-            </ion-item-option>
+            <ion-item-option color="primary" (click)="editClient(client)"><ion-icon slot="icon-only" name="create-outline"></ion-icon></ion-item-option>
+            <ion-item-option color="danger" (click)="deleteClient(client.id!)"><ion-icon slot="icon-only" name="trash-outline"></ion-icon></ion-item-option>
           </ion-item-options>
         }
       </ion-item-sliding>
-    } @empty {
-      <ion-item>
-        <ion-label color="medium">No hay clientes registrados.</ion-label>
-      </ion-item>
-    }
+    } @empty { <ion-item><ion-label>No hay clientes.</ion-label></ion-item> }
   </ion-list>
-
-  <ion-toast
-    [isOpen]="isToastOpen"
-    [message]="toastMessage"
-    duration="2000"
-    (didDismiss)="setToastOpen(false)">
-  </ion-toast>
 </ion-content>
